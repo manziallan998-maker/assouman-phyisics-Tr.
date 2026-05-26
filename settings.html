@@ -196,4 +196,173 @@
                 <div class="settings-item">
                     <div class="settings-info"><h4>Delete Account</h4><p>Permanently delete your account and all data</p></div>
                     <button class="btn-secondary" id="deleteAccountBtn" style="background: #EF4444;">Delete</button>
-                </
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        setupSettingsEvents();
+    });
+
+    function loadSettings() {
+        // Theme
+        const theme = localStorage.getItem('theme') || 'dark';
+        const themeToggle = document.getElementById('themeToggleSwitch');
+        if (themeToggle) {
+            if (theme === 'light') themeToggle.classList.add('active');
+            else themeToggle.classList.remove('active');
+        }
+        
+        // Feature toggles
+        const features = ['BestPerformers', 'LowPerformers', 'Predictive', 'Groups', 'Competition', 'Reports'];
+        features.forEach(feature => {
+            const enabled = localStorage.getItem(`feature_${feature}`) !== 'false';
+            const container = document.getElementById(`feature${feature}`);
+            if (container) {
+                const toggle = container.querySelector('.toggle-switch');
+                if (enabled) toggle.classList.add('active');
+                else toggle.classList.remove('active');
+            }
+        });
+        
+        // Profile
+        document.getElementById('profileName').value = localStorage.getItem('teacherName') || '';
+        document.getElementById('profileEmail').value = localStorage.getItem('teacherEmail') || '';
+        document.getElementById('profileSchool').value = localStorage.getItem('teacherSchool') || '';
+        document.getElementById('profileSubject').value = localStorage.getItem('teacherSubject') || 'Physics';
+        
+        // Other settings
+        const twoFactor = localStorage.getItem('twoFactorEnabled') === 'true';
+        const twoFactorToggle = document.getElementById('twoFactorToggle');
+        if (twoFactorToggle) {
+            if (twoFactor) twoFactorToggle.classList.add('active');
+            else twoFactorToggle.classList.remove('active');
+        }
+        
+        const emailNotif = localStorage.getItem('emailNotifications') !== 'false';
+        const emailToggle = document.getElementById('emailNotifications');
+        if (emailToggle) {
+            if (emailNotif) emailToggle.classList.add('active');
+            else emailToggle.classList.remove('active');
+        }
+        
+        const fontSize = localStorage.getItem('fontSize') || 'medium';
+        document.getElementById('fontSize').value = fontSize;
+        applyFontSize(fontSize);
+        
+        const accentColor = localStorage.getItem('accentColor') || '#2563EB';
+        document.getElementById('accentColor').value = accentColor;
+        applyAccentColor(accentColor);
+    }
+
+    function setupSettingsEvents() {
+        document.getElementById('themeToggleSwitch')?.addEventListener('click', () => {
+            const isLight = document.getElementById('themeToggleSwitch').classList.toggle('active');
+            const newTheme = isLight ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            if (newTheme === 'light') document.body.classList.add('light-theme');
+            else document.body.classList.remove('light-theme');
+        });
+        
+        document.querySelectorAll('#featureBestPerformers, #featureLowPerformers, #featurePredictive, #featureGroups, #featureCompetition, #featureReports').forEach(container => {
+            const toggle = container.querySelector('.toggle-switch');
+            if (toggle) {
+                toggle.addEventListener('click', () => {
+                    toggle.classList.toggle('active');
+                    const feature = container.id.replace('feature', '');
+                    const enabled = toggle.classList.contains('active');
+                    localStorage.setItem(`feature_${feature}`, enabled);
+                    alert(`Feature ${feature} ${enabled ? 'enabled' : 'disabled'}. Refresh to apply.`);
+                });
+            }
+        });
+        
+        document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
+            localStorage.setItem('teacherName', document.getElementById('profileName').value);
+            localStorage.setItem('teacherEmail', document.getElementById('profileEmail').value);
+            localStorage.setItem('teacherSchool', document.getElementById('profileSchool').value);
+            localStorage.setItem('teacherSubject', document.getElementById('profileSubject').value);
+            alert('Profile saved!');
+            location.reload();
+        });
+        
+        document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
+            const newPass = prompt('Enter new password:');
+            if (newPass) {
+                localStorage.setItem('teacherPassword', btoa(newPass));
+                alert('Password changed!');
+            }
+        });
+        
+        document.getElementById('fontSize')?.addEventListener('change', (e) => {
+            localStorage.setItem('fontSize', e.target.value);
+            applyFontSize(e.target.value);
+        });
+        
+        document.getElementById('accentColor')?.addEventListener('change', (e) => {
+            localStorage.setItem('accentColor', e.target.value);
+            applyAccentColor(e.target.value);
+        });
+        
+        document.getElementById('resetSettingsBtn')?.addEventListener('click', () => {
+            if (confirm('Reset all settings to default?')) {
+                localStorage.removeItem('theme');
+                localStorage.removeItem('fontSize');
+                localStorage.removeItem('accentColor');
+                for (const f of ['BestPerformers', 'LowPerformers', 'Predictive', 'Groups', 'Competition', 'Reports']) {
+                    localStorage.removeItem(`feature_${f}`);
+                }
+                alert('Settings reset! Page will reload.');
+                location.reload();
+            }
+        });
+        
+        document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+            if (confirm('⚠️ PERMANENT ACTION: Delete your account and all data? Type "DELETE" to confirm.')) {
+                const confirmText = prompt('Type "DELETE" to confirm:');
+                if (confirmText === 'DELETE') {
+                    localStorage.clear();
+                    alert('Account deleted. Redirecting to login...');
+                    window.location.href = '/index.html';
+                }
+            }
+        });
+        
+        document.getElementById('twoFactorToggle')?.addEventListener('click', function() {
+            this.classList.toggle('active');
+            localStorage.setItem('twoFactorEnabled', this.classList.contains('active'));
+        });
+        
+        document.getElementById('emailNotifications')?.addEventListener('click', function() {
+            this.classList.toggle('active');
+            localStorage.setItem('emailNotifications', this.classList.contains('active'));
+        });
+        
+        document.getElementById('sessionTimeout')?.addEventListener('change', (e) => {
+            localStorage.setItem('sessionTimeout', e.target.value);
+        });
+    }
+
+    function applyFontSize(size) {
+        const sizes = { small: '12px', medium: '14px', large: '16px' };
+        document.body.style.fontSize = sizes[size] || '14px';
+    }
+
+    function applyAccentColor(color) {
+        document.documentElement.style.setProperty('--accent-color', color);
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn-primary { background: ${color} !important; }
+            .nav-item.active { background: ${color}20 !important; }
+            .progress-fill { background: ${color} !important; }
+        `;
+        document.head.appendChild(style);
+    }
+</script>
+</body>
+</html>
