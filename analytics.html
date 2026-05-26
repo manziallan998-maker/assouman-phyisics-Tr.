@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .chart-card h3 {
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: #9CA3AF;
+        }
+        canvas {
+            max-height: 300px;
+        }
+        .comparison-table {
+            background: #1E293B;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        .comparison-table th {
+            background: #0F172A;
+            color: #60A5FA;
+        }
+        .trend-up { color: #10B981; }
+        .trend-down { color: #EF4444; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2>Performance Analytics</h2>
+                <div class="section-actions">
+                    <select id="termSelect" class="search-input" style="width: auto;">
+                        <option value="1">Term 1</option>
+                        <option value="2">Term 2</option>
+                        <option value="3" selected>Term 3</option>
+                    </select>
+                    <button class="btn-secondary" id="exportAnalyticsBtn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+
+            <!-- Class Selector -->
+            <div class="class-selector" id="classSelector" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;"></div>
+
+            <!-- Analytics Dashboard -->
+            <div id="analyticsDashboard" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h3>Class Performance Comparison</h3>
+                        <canvas id="classComparisonChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Grade Distribution</h3>
+                        <canvas id="gradeDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h3>Performance Trends Over Terms</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Top 10 Students</h3>
+                        <canvas id="topStudentsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="comparison-table">
+                    <h3 style="padding: 16px; margin: 0;">Class Comparison</h3>
+                    <table id="comparisonTable">
+                        <thead>
+                            <tr><th>Class</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Passing Rate</th><th>Trend</th></tr>
+                        </thead>
+                        <tbody id="comparisonBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    let classComparisonChart = null;
+    let gradeDistributionChart = null;
+    let trendChart = null;
+    let topStudentsChart = null;
+    let currentClassesData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadClasses();
+        document.getElementById('termSelect')?.addEventListener('change', updateAnalytics);
+        document.getElementById('exportAnalyticsBtn')?.addEventListener('click', exportAnalytics);
+    });
+
+    async function loadClasses() {
+        const token = localStorage.getItem('teacherToken');
+        try {
+            const response = await fetch('/api/classes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                currentClassesData = data.data;
+                displayClassSelector(data.data);
+                if (data.data.length > 0) {
+                    await loadAnalytics(data.data);
+                    document.getElementById('analyticsDashboard').style.display = 'block';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading classes:', error);
+        }
+    }
+
+    function displayClassSelector(classes) {
+        const container = document.getElementById('classSelector');
+        container.innerHTML = `
+            <button class="class-card active" data-class-id="all" style="background: #2563EB; border-radius: 12px; padding: 12px 20px; cursor: pointer;">
+                ALL CLASSES
+            </button>
+            ${classes.map(cls => `
+                <button class="class-card" data-class-id="${cls.class_id}" style="background: #1E293B; border: 1px solid #334155; border-radius: 12px; padding: 12px 20px; cursor: pointer;">
+                    ${cls.name}
+                </button>
+            `).join('')}
+        `;
+        
+        document.querySelectorAll('.class-card').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.class-card').forEach(b => b.style.background = '#1E293B');
+                btn.style.background = '#2563EB';
+                loadAnalytics(currentClassesData, btn.dataset.classId);
+            });
+        });
+    }
+
+    async function loadAnalytics(classes, filterClassId = 'all') {
+        const term = document.getElementById('termSelect').value;
+        const classData = filterClassId === 'all' ? classes : classes.filter(c => c.class_id === filterClassId);
+        
+        // Update class comparison chart
+        const classNames = classData.map(c => c.name);
+        const averages = classData.map(c => c.average || 0);
+        
+        if (classComparisonChart) classComparisonChart.destroy();
+        classComparisonChart = new Chart(document.getElementById('classComparisonChart'), {
+            type: 'bar',
+            data: { labels: classNames, datasets: [{ label: 'Average Score (%)', data: averages, backgroundColor: '#3B82F6' }] },
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { min: 0, max: 100 } } }
+        });
+        
+        // Grade distribution
+        const grades = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+        // This would need actual grade data from API
+        
+        if (gradeDistributionChart) gradeDistributionChart.destroy();
+        gradeDistributionChart = new Chart(document.getElementById('gradeDistributionChart'), {
+            type: 'doughnut',
+            data: { labels: ['A (90-100%)', 'B (80-89%)', 'C (70-79%)', 'D (50-69%)', 'F (0-49%)'], 
+                    datasets: [{ data: [15, 25, 30, 20, 10], backgroundColor: ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'] }] },
+            options: { responsive: true }
+        });
+        
+        // Update comparison table
+        const comparisonBody = document.getElementById('comparisonBody');
+        comparisonBody.innerHTML = classData.map(c => `
+            <tr>
+                <td>${c.name}</td>
+                <td><strong>${c.average || 0}%</strong></td>
+                <td>${c.highest || 0}%</td>
+                <td>${c.lowest || 0}%</td>
+                <td>${c.passing_rate || 0}%</td>
+                <td class="${(c.trend || 0) >= 0 ? 'trend-up' : 'trend-down'}">${(c.trend || 0) >= 0 ? '↑' : '↓'} ${Math.abs(c.trend || 0)}%</td>
+            </tr>
+        `).join('');
+    }
+
+    function updateAnalytics() {
+        loadAnalytics(currentClassesData);
+    }
+
+    function exportAnalytics() {
+        alert('Export feature will generate PDF/Excel report');
+    }
+</script>
+</body>
+</html>
