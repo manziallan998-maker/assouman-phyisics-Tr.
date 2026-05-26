@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-chalkboard-user"></i>
+                <span>SMARTCLASS</span>
+            </div>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="classes.html" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>Classes</span>
+            </a>
+            <a href="groups.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Smart Groups</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="predict.html" class="nav-item">
+                <i class="fas fa-brain"></i>
+                <span>Predict</span>
+            </a>
+            <a href="lesson-planner.html" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Lesson Planner</span>
+            </a>
+            <a href="timetable.html" class="nav-item">
+                <i class="fas fa-clock"></i>
+                <span>Timetable</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+            <a href="compete.html" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                <span>Compete</span>
+            </a>
+            <a href="backup.html" class="nav-item">
+                <i class="fas fa-database"></i>
+                <span>Backup</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="help.html" class="nav-item">
+                <i class="fas fa-question-circle"></i>
+                <span>Help</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="info">
+                    <p class="name" id="teacherName">Mr. UWIMANA</p>
+                    <p class="email" id="teacherEmail">teacher@school.rw</p>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-title">
+                <h1>Dashboard</h1>
+                <p>Welcome back, <span id="teacherNameHeader">Mr. UWIMANA</span></p>
+            </div>
+            <div class="header-actions">
+                <div class="notifications-wrapper">
+                    <button class="notifications-btn" id="notificationsBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notificationBadge">3</span>
+                    </button>
+                    <div class="notifications-dropdown" id="notificationsDropdown">
+                        <div class="dropdown-header">
+                            <span>Notifications</span>
+                            <button class="mark-read">Mark all read</button>
+                        </div>
+                        <div class="notifications-list">
+                            <div class="notification new">
+                                <i class="fas fa-chalkboard"></i>
+                                <div class="content">
+                                    <p>Today's schedule: Physics S4A at 08:00</p>
+                                    <span class="time">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="notification new">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div class="content">
+                                    <p>Physics S3B has 8 failing students</p>
+                                    <span class="time">5 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="notification">
+                                <i class="fas fa-chart-line"></i>
+                                <div class="content">
+                                    <p>UWAMAHORO Eric is top performer this term</p>
+                                    <span class="time">Yesterday</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown-footer">
+                            <a href="#">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-toggle">
+                    <button id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Students</h3>
+                    <p class="stat-value" id="totalStudents">186</p>
+                    <span class="stat-change positive">+12 this term</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-chalkboard"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Classes</h3>
+                    <p class="stat-value" id="totalClasses">5</p>
+                    <span class="stat-change">All active</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-chart-simple"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Passing Rate</h3>
+                    <p class="stat-value" id="passingRate">73%</p>
+                    <span class="stat-change positive">+5% from last term</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Needs Attention</h3>
+                    <p class="stat-value" id="needsAttention">23</p>
+                    <span class="stat-change negative">-3 from last term</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Performance Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Class Performance Overview</h2>
+                <div class="section-actions">
+                    <input type="text" placeholder="Search class..." class="search-input" id="classSearch">
+                    <button class="btn-secondary" id="exportAnalytics">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="performance-list" id="performanceList">
+                <div class="performance-item">
+                    <div class="class-info">
+                        <span class="class-name">Physics S4A</span>
+                        <span class="student-count">42 students</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%; background: #3B82F6;"></div>
+                    </div>
+                    <div class="class-stats">
+                        <span class="percentage">68%</span>
+                        <span class="trend up">↑ +5%</span>
+                    </div>
+                </div>
+                <div class="performance-item">
+                    <div class="class-info">
+                        <span class="class-name">Physics S3A</span>
+                        <span class="student-count">40 students</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 72%; background: #10B981;"></div>
+                    </div>
+                    <div class="class-stats">
+                        <span class="percentage">72%</span>
+                        <span class="trend up">↑ +3%</span>
+                    </div>
+                </div>
+                <div class="performance-item">
+                    <div class="class-info">
+                        <span class="class-name">Physics S3B</span>
+                        <span class="student-count">38 students</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 58%; background: #F59E0B;"></div>
+                    </div>
+                    <div class="class-stats">
+                        <span class="percentage">58%</span>
+                        <span class="trend down">↓ -2%</span>
+                    </div>
+                </div>
+                <div class="performance-item">
+                    <div class="class-info">
+                        <span class="class-name">Physics S2A</span>
+                        <span class="student-count">35 students</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 66%; background: #3B82F6;"></div>
+                    </div>
+                    <div class="class-stats">
+                        <span class="percentage">66%</span>
+                        <span class="trend up">↑ +4%</span>
+                    </div>
+                </div>
+                <div class="performance-item">
+                    <div class="class-info">
+                        <span class="class-name">Physics S2B</span>
+                        <span class="student-count">37 students</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 84%; background: #10B981;"></div>
+                    </div>
+                    <div class="class-stats">
+                        <span class="percentage">84%</span>
+                        <span class="trend up">↑ +8%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="quick-actions">
+                <button class="action-card" onclick="window.location.href='classes.html'">
+                    <i class="fas fa-pen"></i>
+                    <span>Add Marks</span>
+                </button>
+                <button class="action-card" onclick="window.location.href='classes.html?action=newclass'">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Class</span>
+                </button>
+                <button class="action-card" onclick="window.location.href='groups.html'">
+                    <i class="fas fa-users"></i>
+                    <span>Create Groups</span>
+                </button>
+                <button class="action-card" onclick="window.location.href='settings.html'">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/notifications.js"></script>
+</body>
+</html>
