@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup & Restore - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .backup-card {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .backup-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #334155;
+        }
+        .backup-option:last-child { border-bottom: none; }
+        .backup-icon { font-size: 32px; width: 60px; }
+        .backup-info { flex: 1; }
+        .backup-info h4 { margin-bottom: 4px; }
+        .backup-info p { font-size: 12px; color: #9CA3AF; }
+        .auto-backup-toggle {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 16px;
+            background: #0F172A;
+            border-radius: 12px;
+        }
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active { background: #10B981; }
+        .toggle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active::after { left: 26px; }
+        .backup-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .backup-file {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #0F172A;
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-database"></i> Backup & Restore</h2>
+                <p>Secure your data with automatic and manual backups</p>
+            </div>
+
+            <!-- Auto Backup Settings -->
+            <div class="backup-card">
+                <h3 style="margin-bottom: 16px;">Auto Backup Settings</h3>
+                <div class="auto-backup-toggle">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px;"></i>
+                    <div style="flex: 1;">
+                        <strong>Automatic Daily Backup</strong>
+                        <p style="font-size: 12px;">Backup your data automatically every day at 8:00 PM</p>
+                    </div>
+                    <div class="toggle-switch" id="autoBackupToggle"></div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <label>Backup Location</label>
+                    <select id="backupLocation" class="search-input" style="width: 100%; margin-top: 8px;">
+                        <option value="local">Local Storage (Computer)</option>
+                        <option value="cloud">Cloud Storage (Google Drive)</option>
+                        <option value="both">Both Local and Cloud</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Backup Options -->
+            <div class="backup-card">
+                <h3 style="margin-bottom: 16px;">Manual Backup</h3>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-download"></i></div>
+                    <div class="backup-info"><h4>Export All Data</h4><p>Download complete database backup as JSON file</p></div>
+                    <button class="btn-primary" id="exportBackupBtn">Export</button>
+                </div>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-upload"></i></div>
+                    <div class="backup-info"><h4>Import Backup</h4><p>Restore from previously exported backup file</p></div>
+                    <button class="btn-secondary" id="importBackupBtn">Import</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-file-excel"></i></div>
+                    <div class="backup-info"><h4>Export as Excel</h4><p>Download all data in Excel format for reporting</p></div>
+                    <button class="btn-secondary" id="exportExcelBackupBtn">Export Excel</button>
+                </div>
+            </div>
+
+            <!-- Backup History -->
+            <div class="backup-card">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-history"></i> Backup History</h3>
+                <div class="backup-list" id="backupHistory"></div>
+                <button class="btn-secondary" id="clearHistoryBtn" style="margin-top: 16px; width: 100%;">Clear History</button>
+            </div>
+
+            <!-- Data Management -->
+            <div class="backup-card">
+                <h3 style="margin-bottom: 16px;">Data Management</h3>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="backup-info"><h4>Export Analytics Report</h4><p>Generate detailed analytics report in PDF</p></div>
+                    <button class="btn-secondary" id="exportAnalyticsReportBtn">Generate</button>
+                </div>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-trash-alt" style="color: #EF4444;"></i></div>
+                    <div class="backup-info"><h4>Clear All Data</h4><p>⚠️ Permanently delete all your data (cannot be undone)</p></div>
+                    <button class="btn-secondary" id="clearAllDataBtn" style="background: #EF4444;">Clear</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    let backupHistory = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+    let autoBackupEnabled = localStorage.getItem('autoBackupEnabled') === 'true';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBackupHistory();
+        setupEventListeners();
+        setupAutoBackup();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('exportBackupBtn')?.addEventListener('click', exportAllData);
+        document.getElementById('importBackupBtn')?.addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile')?.addEventListener('change', importBackup);
+        document.getElementById('exportExcelBackupBtn')?.addEventListener('click', exportToExcel);
+        document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
+        document.getElementById('clearAllDataBtn')?.addEventListener('click', clearAllData);
+        document.getElementById('exportAnalyticsReportBtn')?.addEventListener('click', exportAnalyticsReport);
+        document.getElementById('autoBackupToggle')?.addEventListener('click', toggleAutoBackup);
+    }
+
+    async function exportAllData() {
+        const token = localStorage.getItem('teacherToken');
+        try {
+            const classesResponse = await fetch('/api/classes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const classes = await classesResponse.json();
+            
+            const allData = {
+                exportDate: new Date().toISOString(),
+                version: '1.0',
+                teacher: { name: localStorage.getItem('teacherName'), email: localStorage.getItem('teacherEmail') },
+                classes: classes.data || [],
+                settings: {
+                    theme: localStorage.getItem('theme'),
+                    autoBackup: autoBackupEnabled,
+                    notifications: true
+                }
+            };
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `smartclass_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            addToBackupHistory(`Manual backup created on ${new Date().toLocaleString()}`);
+            alert('Backup exported successfully!');
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Error exporting data');
+        }
+    }
+
+    function importBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backupData = JSON.parse(e.target.result);
+                if (confirm('Restoring will replace current data. Continue?')) {
+                    // Restore settings
+                    if (backupData.settings) {
+                        if (backupData.settings.theme) localStorage.setItem('theme', backupData.settings.theme);
+                        if (backupData.settings.autoBackup !== undefined) {
+                            autoBackupEnabled = backupData.settings.autoBackup;
+                            localStorage.setItem('autoBackupEnabled', autoBackupEnabled);
+                            updateToggleUI();
+                        }
+                    }
+                    addToBackupHistory(`Restored from backup dated ${backupData.exportDate}`);
+                    alert('Backup restored successfully! Page will reload.');
+                    location.reload();
+                }
+            } catch (error) {
+                alert('Invalid backup file');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function exportToExcel() {
+        const token = localStorage.getItem('teacherToken');
+        fetch('/api/classes', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(res => res.json())
+            .then(data => {
+                const ws = XLSX.utils.json_to_sheet(data.data || []);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Classes');
+                XLSX.writeFile(wb, `classes_export_${Date.now()}.xlsx`);
+            });
+    }
+
+    function exportAnalyticsReport() {
+        alert('Generating analytics report...');
+        setTimeout(() => {
+            const html = `
+                <html><head><title>Analytics Report</title>
+                <style>body { font-family: Arial; padding: 40px; }</style>
+                </head><body>
+                <h1>SmartClass Analytics Report</h1>
+                <p>Generated: ${new Date().toLocaleString()}</p>
+                <h2>Summary Statistics</h2>
+                <p>Total Classes: ${JSON.parse(localStorage.getItem('classes') || '[]').length}</p>
+                <p>Auto Backup: ${autoBackupEnabled ? 'Enabled' : 'Disabled'}</p>
+                </body></html>
+            `;
+            const blob = new Blob([html], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `analytics_report_${Date.now()}.html`;
+            link.click();
+        }, 500);
+    }
+
+    function addToBackupHistory(entry) {
+        backupHistory.unshift({ date: new Date().toISOString(), entry });
+        backupHistory = backupHistory.slice(0, 10);
+        localStorage.setItem('backupHistory', JSON.stringify(backupHistory));
+        loadBackupHistory();
+    }
+
+    function loadBackupHistory() {
+        const container = document.getElementById('backupHistory');
+        if (!container) return;
+        container.innerHTML = backupHistory.map(h => `
+            <div class="backup-file">
+                <span><i class="fas fa-database"></i> ${h.entry}</span>
+                <span style="font-size: 12px; color: #9CA3AF;">${new Date(h.date).toLocaleString()}</span>
+            </div>
+        `).join('');
+        if (backupHistory.length === 0) container.innerHTML = '<div style="text-align: center; padding: 20px;">No backups yet</div>';
+    }
+
+    function clearHistory() {
+        if (confirm('Clear backup history?')) {
+            backupHistory = [];
+            localStorage.setItem('backupHistory', JSON.stringify(backupHistory));
+            loadBackupHistory();
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('⚠️ WARNING: This will delete ALL your data! This action cannot be undone. Type "DELETE" to confirm.')) {
+            const confirmText = prompt('Type "DELETE" to confirm:');
+            if (confirmText === 'DELETE') {
+                localStorage.clear();
+                alert('All data cleared. Page will reload.');
+                location.reload();
+            }
+        }
+    }
+
+    function toggleAutoBackup() {
+        autoBackupEnabled = !autoBackupEnabled;
+        localStorage.setItem('autoBackupEnabled', autoBackupEnabled);
+        updateToggleUI();
+        
+        if (autoBackupEnabled) {
+            scheduleAutoBackup();
+            addToBackupHistory('Auto backup enabled');
+        }
+    }
+
+    function updateToggleUI() {
+        const toggle = document.getElementById('autoBackupToggle');
+        if (toggle) {
+            if (autoBackupEnabled) toggle.classList.add('active');
+            else toggle.classList.remove('active');
+        }
+    }
+
+    function setupAutoBackup() {
+        updateToggleUI();
+        if (autoBackupEnabled) scheduleAutoBackup();
+    }
+
+    function scheduleAutoBackup() {
+        const lastBackup = localStorage.getItem('lastAutoBackup');
+        const today = new Date().toDateString();
+        if (lastBackup !== today) {
+            setTimeout(() => {
+                exportAllData();
+                localStorage.setItem('lastAutoBackup', today);
+                addToBackupHistory('Auto backup completed');
+            }, 1000);
+        }
+        setInterval(() => {
+            const now = new Date();
+            if (now.getHours() === 20 && now.getMinutes() === 0) {
+                exportAllData();
+                localStorage.setItem('lastAutoBackup', new Date().toDateString());
+            }
+        }, 60000);
+    }
+</script>
+</body>
+</html>
