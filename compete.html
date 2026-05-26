@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compete - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .leaderboard {
+            background: #1E293B;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            transition: all 0.3s;
+        }
+        .leaderboard-item:hover { background: #334155; }
+        .rank {
+            width: 50px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .rank-1 { color: #F59E0B; }
+        .rank-2 { color: #9CA3AF; }
+        .rank-3 { color: #CD7F32; }
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            background: #2563EB;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 16px;
+        }
+        .student-info { flex: 1; }
+        .student-name { font-weight: 600; margin-bottom: 4px; }
+        .student-class { font-size: 12px; color: #9CA3AF; }
+        .score { font-size: 20px; font-weight: 700; color: #60A5FA; }
+        .badge-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: #0F172A;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .badge i { font-size: 16px; }
+        .class-leaderboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .class-card {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .class-card h4 { margin-bottom: 12px; color: #60A5FA; }
+        .class-student {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-trophy"></i> Competition Mode</h2>
+                <select id="termSelectCompete" class="search-input" style="width: auto;">
+                    <option value="1">Term 1</option>
+                    <option value="2">Term 2</option>
+                    <option value="3" selected>Term 3</option>
+                </select>
+            </div>
+
+            <!-- Badges Display -->
+            <div class="badge-container" id="badgeContainer"></div>
+
+            <!-- Overall Leaderboard -->
+            <h3 style="margin: 24px 0 16px;"><i class="fas fa-crown"></i> Overall School Leaderboard</h3>
+            <div class="leaderboard" id="overallLeaderboard"></div>
+
+            <!-- Class vs Class -->
+            <h3 style="margin: 32px 0 16px;"><i class="fas fa-chart-simple"></i> Class Competition</h3>
+            <div class="class-leaderboard" id="classLeaderboard"></div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    let allStudentsData = [];
+    let classesData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        document.getElementById('termSelectCompete')?.addEventListener('change', () => loadData());
+    });
+
+    async function loadData() {
+        const token = localStorage.getItem('teacherToken');
+        const term = document.getElementById('termSelectCompete').value;
+        
+        try {
+            const classesResponse = await fetch('/api/classes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const classesResult = await classesResponse.json();
+            if (classesResult.success) {
+                classesData = classesResult.data;
+                allStudentsData = [];
+                for (const cls of classesData) {
+                    const studentsResponse = await fetch(`/api/classes/${cls.class_id}/students`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const studentsResult = await studentsResponse.json();
+                    if (studentsResult.success) {
+                        studentsResult.data.forEach(s => {
+                            s.class_name = cls.name;
+                            s.class_id = cls.class_id;
+                            s.score = s[`term${term}`] || 0;
+                        });
+                        allStudentsData.push(...studentsResult.data);
+                    }
+                }
+                displayLeaderboards();
+            } else {
+                loadDemoData();
+            }
+        } catch (error) {
+            loadDemoData();
+        }
+    }
+
+    function loadDemoData() {
+        classesData = [
+            { name: 'Physics S4A', class_id: 'CLS1', student_count: 42, average: 68 },
+            { name: 'Physics S3B', class_id: 'CLS2', student_count: 38, average: 58 },
+            { name: 'Physics S3A', class_id: 'CLS3', student_count: 40, average: 72 }
+        ];
+        
+        allStudentsData = [
+            { name: 'UWAMAHORO Eric', class_name: 'Physics S4A', score: 94, term1: 82, term2: 88, term3: 94 },
+            { name: 'IRADUKUNDA Diane', class_name: 'Physics S4A', score: 91, term1: 85, term2: 89, term3: 91 },
+            { name: 'NSENGIYUMVA Jean', class_name: 'Physics S4A', score: 88, term1: 80, term2: 85, term3: 88 },
+            { name: 'MUKAMANA Grace', class_name: 'Physics S3B', score: 71, term1: 45, term2: 58, term3: 71 },
+            { name: 'NSENGIMANA Theophile', class_name: 'Physics S3B', score: 83, term1: 58, term2: 71, term3: 83 }
+        ];
+        displayLeaderboards();
+    }
+
+    function displayLeaderboards() {
+        const term = document.getElementById('termSelectCompete').value;
+        const sortedStudents = [...allStudentsData].sort((a,b) => b.score - a.score);
+        
+        // Overall Leaderboard
+        const overallHtml = sortedStudents.slice(0, 10).map((student, index) => {
+            let rankClass = '';
+            let rankIcon = '';
+            if (index === 0) { rankClass = 'rank-1'; rankIcon = '🥇'; }
+            else if (index === 1) { rankClass = 'rank-2'; rankIcon = '🥈'; }
+            else if (index === 2) { rankClass = 'rank-3'; rankIcon = '🥉'; }
+            else { rankIcon = `${index + 1}`; }
+            
+            return `
+                <div class="leaderboard-item">
+                    <div class="rank ${rankClass}">${rankIcon}</div>
+                    <div class="student-avatar"><i class="fas fa-user-graduate"></i></div>
+                    <div class="student-info">
+                        <div class="student-name">${student.name}</div>
+                        <div class="student-class">${student.class_name}</div>
+                    </div>
+                    <div class="score">${student.score}%</div>
+                </div>
+            `;
+        }).join('');
+        
+        document.getElementById('overallLeaderboard').innerHTML = overallHtml || '<div style="padding: 40px; text-align: center;">No data available</div>';
+        
+        // Class Competition
+        const classStats = classesData.map(cls => {
+            const classStudents = allStudentsData.filter(s => s.class_name === cls.name);
+            const avgScore = classStudents.reduce((a,b) => a + b.score, 0) / (classStudents.length || 1);
+            const topStudent = classStudents.sort((a,b) => b.score - a.score)[0];
+            const topStudentsList = classStudents.sort((a,b) => b.score - a.score).slice(0, 3);
+            return { ...cls, avgScore, topStudent, topStudentsList };
+        }).sort((a,b) => b.avgScore - a.avgScore);
+        
+        const classHtml = classStats.map((cls, idx) => `
+            <div class="class-card">
+                <h4>${idx === 0 ? '🏆 ' : ''}${cls.name}</h4>
+                <div class="class-student"><strong>Class Average:</strong> ${cls.avgScore.toFixed(1)}%</div>
+                <div class="class-student"><strong>Top Student:</strong> ${cls.topStudent?.name || 'N/A'} (${cls.topStudent?.score || 0}%)</div>
+                <div style="margin-top: 8px;"><strong>Top 3:</strong></div>
+                ${cls.topStudentsList.map((s,i) => `<div class="class-student">${i+1}. ${s.name} - ${s.score}%</div>`).join('')}
+            </div>
+        `).join('');
+        
+        document.getElementById('classLeaderboard').innerHTML = classHtml;
+        
+        // Badges
+        const badges = [
+            { icon: '🏆', text: 'Highest Score', condition: sortedStudents[0]?.name, value: sortedStudents[0]?.score },
+            { icon: '📈', text: 'Most Improved', condition: 'MUKAMANA Grace', value: '+26%' },
+            { icon: '⭐', text: 'Perfect Attendance', condition: '5 students', value: '' },
+            { icon: '💪', text: 'Hard Worker', condition: '12 students', value: '' }
+        ];
+        
+        const badgeHtml = badges.map(b => `<div class="badge"><i class="fas ${b.icon === '🏆' ? 'fa-trophy' : b.icon === '📈' ? 'fa-chart-line' : 'fa-star'}"></i> ${b.text}: ${b.condition} ${b.value ? `(${b.value})` : ''}</div>`).join('');
+        document.getElementById('badgeContainer').innerHTML = badgeHtml;
+    }
+</script>
+</body>
+</html>
