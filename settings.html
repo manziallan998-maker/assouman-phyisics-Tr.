@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .settings-section {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .settings-item:last-child { border-bottom: none; }
+        .settings-info h4 { margin-bottom: 4px; }
+        .settings-info p { font-size: 12px; color: #9CA3AF; }
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active { background: #10B981; }
+        .toggle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active::after { left: 26px; }
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .profile-form input {
+            width: 100%;
+            padding: 12px;
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 16px;
+        }
+        .danger-zone {
+            border: 1px solid #EF4444;
+            background: #EF444410;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <p>Customize your SmartClass Analytics experience</p>
+            </div>
+
+            <!-- Appearance Settings -->
+            <div class="settings-section">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-palette"></i> Appearance</h3>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Dark/Light Mode</h4><p>Switch between dark and light theme</p></div>
+                    <div class="toggle-switch" id="themeToggleSwitch"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Accent Color</h4><p>Choose primary color for the interface</p></div>
+                    <input type="color" id="accentColor" value="#2563EB" style="width: 60px; height: 40px; cursor: pointer;">
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Font Size</h4><p>Adjust text size for better readability</p></div>
+                    <select id="fontSize" class="search-input" style="width: auto;">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Feature Toggles -->
+            <div class="settings-section">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-toggle-on"></i> Feature Toggles</h3>
+                <div class="settings-item" id="featureBestPerformers">
+                    <div class="settings-info"><h4>🏆 Best Performers</h4><p>Show top performing students</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="settings-item" id="featureLowPerformers">
+                    <div class="settings-info"><h4>⚠️ Low Performers</h4><p>Show students needing attention</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="settings-item" id="featurePredictive">
+                    <div class="settings-info"><h4>📈 Predictive Insights</h4><p>AI-powered performance predictions</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="settings-item" id="featureGroups">
+                    <div class="settings-info"><h4>👥 Smart Groups</h4><p>Auto-create balanced study groups</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="settings-item" id="featureCompetition">
+                    <div class="settings-info"><h4>🏆 Competition Mode</h4><p>Gamification and leaderboards</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="settings-item" id="featureReports">
+                    <div class="settings-info"><h4>📊 Advanced Reports</h4><p>SDMS compatible report generation</p></div>
+                    <div class="toggle-switch"></div>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="settings-section">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-user-circle"></i> Account Settings</h3>
+                <div class="profile-form">
+                    <label>Full Name</label>
+                    <input type="text" id="profileName" placeholder="Your full name">
+                    <label>Email Address</label>
+                    <input type="email" id="profileEmail" placeholder="teacher@school.rw">
+                    <label>School Name</label>
+                    <input type="text" id="profileSchool" placeholder="School name">
+                    <label>Subject Taught</label>
+                    <input type="text" id="profileSubject" placeholder="Physics">
+                    <button class="btn-primary" id="saveProfileBtn">Save Profile</button>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-section">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-lock"></i> Security</h3>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Change Password</h4><p>Update your account password</p></div>
+                    <button class="btn-secondary" id="changePasswordBtn">Change</button>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Two-Factor Authentication</h4><p>Add extra security to your account</p></div>
+                    <div class="toggle-switch" id="twoFactorToggle"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Session Timeout</h4><p>Auto logout after inactivity</p></div>
+                    <select id="sessionTimeout" class="search-input" style="width: auto;">
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="120">2 hours</option>
+                        <option value="never">Never</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-section">
+                <h3 style="margin-bottom: 16px;"><i class="fas fa-bell"></i> Notifications</h3>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Email Notifications</h4><p>Receive updates via email</p></div>
+                    <div class="toggle-switch" id="emailNotifications"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Browser Notifications</h4><p>Show desktop notifications</p></div>
+                    <div class="toggle-switch" id="browserNotifications"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Lesson Reminders</h4><p>Get alerts before class starts</p></div>
+                    <div class="toggle-switch" id="lessonReminders"></div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-section danger-zone">
+                <h3 style="margin-bottom: 16px; color: #EF4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Reset All Settings</h4><p>Restore all settings to default</p></div>
+                    <button class="btn-secondary" id="resetSettingsBtn" style="background: #F59E0B;">Reset</button>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info"><h4>Delete Account</h4><p>Permanently delete your account and all data</p></div>
+                    <button class="btn-secondary" id="deleteAccountBtn" style="background: #EF4444;">Delete</button>
+                </
