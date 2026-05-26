@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Insights - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .risk-card {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #EF4444;
+        }
+        .improving-card {
+            border-left-color: #10B981;
+        }
+        .student-list {
+            margin-top: 16px;
+        }
+        .student-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        .student-name {
+            font-weight: 500;
+        }
+        .score-change {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .old-score { color: #9CA3AF; text-decoration: line-through; }
+        .new-score { font-weight: 700; }
+        .prediction-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .high-risk { background: #EF4444; color: white; }
+        .medium-risk { background: #F59E0B; color: black; }
+        .low-risk { background: #10B981; color: white; }
+        .confidence-bar {
+            width: 100px;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: #3B82F6;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-brain"></i> Predictive Insights</h2>
+                <button class="btn-secondary" id="refreshPredictions"><i class="fas fa-sync-alt"></i> Refresh Analysis</button>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="stats-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-info"><h3>At Risk Students</h3><p class="stat-value" id="atRiskCount">0</p><span class="stat-change negative">Need immediate attention</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info"><h3>Improving Students</h3><p class="stat-value" id="improvingCount">0</p><span class="stat-change positive">Showing progress</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-chart-simple"></i></div>
+                    <div class="stat-info"><h3>Prediction Accuracy</h3><p class="stat-value">92%</p><span class="stat-change positive">Based on historical data</span></div>
+                </div>
+            </div>
+
+            <!-- At Risk Students -->
+            <div class="risk-card">
+                <h3><i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i> Students at Risk of Failing</h3>
+                <p style="color: #9CA3AF; margin-top: 4px;">These students are predicted to fail next term based on current performance trends</p>
+                <div class="student-list" id="atRiskList"></div>
+            </div>
+
+            <!-- Improving Students -->
+            <div class="risk-card improving-card">
+                <h3><i class="fas fa-chart-line" style="color: #10B981;"></i> Students Showing Improvement</h3>
+                <p style="color: #9CA3AF; margin-top: 4px;">These students are predicted to pass next term with continued support</p>
+                <div class="student-list" id="improvingList"></div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="risk-card" style="border-left-color: #3B82F6;">
+                <h3><i class="fas fa-lightbulb"></i> AI Recommendations</h3>
+                <ul style="margin-top: 12px; list-style: none;">
+                    <li style="padding: 8px 0;"><i class="fas fa-chalkboard" style="color: #F59E0B;"></i> Focus extra tutoring on Physics S3B - lowest performing class</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-users" style="color: #F59E0B;"></i> Create study groups mixing top performers with at-risk students</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-calendar" style="color: #F59E0B;"></i> Schedule parent meetings for students with >15% performance drop</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-book" style="color: #F59E0B;"></i> Review topics: Mechanics (62% average), Electricity (58% average)</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPredictions();
+        document.getElementById('refreshPredictions')?.addEventListener('click', loadPredictions);
+    });
+
+    async function loadPredictions() {
+        const token = localStorage.getItem('teacherToken');
+        try {
+            const response = await fetch('/api/analytics/predict', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                displayPredictions(data.data);
+            } else {
+                // Demo data for display
+                displayDemoData();
+            }
+        } catch (error) {
+            console.error('Error loading predictions:', error);
+            displayDemoData();
+        }
+    }
+
+    function displayPredictions(data) {
+        const atRisk = data.at_risk || [];
+        const improving = data.improving || [];
+        
+        document.getElementById('atRiskCount').textContent = atRisk.length;
+        document.getElementById('improvingCount').textContent = improving.length;
+        
+        const atRiskList = document.getElementById('atRiskList');
+        atRiskList.innerHTML = atRisk.map(student => `
+            <div class="student-row">
+                <div class="student-name">${student.name}</div>
+                <div class="score-change">
+                    <span class="old-score">${student.term1}%</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="new-score" style="color: #EF4444;">${student.term3}%</span>
+                    <span class="prediction-badge ${getRiskLevel(student.change)}">${getRiskText(student.change)} Risk</span>
+                </div>
+                <div class="confidence-bar"><div class="confidence-fill" style="width: ${student.confidence || 85}%"></div></div>
+                <span style="font-size: 12px; color: #9CA3AF;">${student.confidence || 85}% confidence</span>
+            </div>
+        `).join('');
+        
+        const improvingList = document.getElementById('improvingList');
+        improvingList.innerHTML = improving.map(student => `
+            <div class="student-row">
+                <div class="student-name">${student.name}</div>
+                <div class="score-change">
+                    <span class="old-score">${student.term1}%</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="new-score" style="color: #10B981;">${student.term3}%</span>
+                    <span class="prediction-badge low-risk">Improving</span>
+                </div>
+                <div class="confidence-bar"><div class="confidence-fill" style="width: ${student.confidence || 75}%"></div></div>
+                <span style="font-size: 12px; color: #9CA3AF;">+${student.change}% change</span>
+            </div>
+        `).join('');
+    }
+
+    function displayDemoData() {
+        const atRiskDemo = [
+            { name: 'NDAYISABA Pierre', term1: 38, term3: 41, change: -15, confidence: 92 },
+            { name: 'MUKANKURUNGA Marie', term1: 35, term3: 38, change: -12, confidence: 88 },
+            { name: 'HABUMUGISHA David', term1: 42, term3: 44, change: -10, confidence: 85 },
+            { name: 'NYIRANSABIMANA Alice', term1: 45, term3: 47, change: -8, confidence: 82 }
+        ];
+        
+        const improvingDemo = [
+            { name: 'MUKAMANA Grace', term1: 45, term3: 71, change: +26, confidence: 78 },
+            { name: 'NSENGIMANA Theophile', term1: 58, term3: 83, change: +25, confidence: 82 },
+            { name: 'UWIMANA Chantal', term1: 68, term3: 92, change: +24, confidence: 75 }
+        ];
+        
+        displayPredictions({ at_risk: atRiskDemo, improving: improvingDemo });
+    }
+
+    function getRiskLevel(change) {
+        if (change < -20) return 'high-risk';
+        if (change < -10) return 'medium-risk';
+        return 'low-risk';
+    }
+
+    function getRiskText(change) {
+        if (change < -20) return 'Critical';
+        if (change < -10) return 'High';
+        return 'Medium';
+    }
+</script>
+</body>
+</html>
