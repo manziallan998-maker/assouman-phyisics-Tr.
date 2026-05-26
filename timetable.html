@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .timetable-container {
+            background: #1E293B;
+            border-radius: 16px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .timetable th, .timetable td {
+            border: 1px solid #334155;
+            padding: 12px;
+            text-align: center;
+            vertical-align: top;
+        }
+        .timetable th {
+            background: #0F172A;
+            color: #60A5FA;
+            font-weight: 600;
+        }
+        .time-slot {
+            background: #0F172A;
+            font-weight: 600;
+            width: 80px;
+        }
+        .lesson-card {
+            background: #2563EB20;
+            border-left: 3px solid #3B82F6;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .lesson-card:hover {
+            background: #2563EB40;
+            transform: translateX(-2px);
+        }
+        .lesson-class {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .lesson-time {
+            font-size: 10px;
+            color: #9CA3AF;
+        }
+        .current-lesson-highlight {
+            background: #1E3A5F;
+            position: relative;
+        }
+        .current-lesson-highlight::before {
+            content: "🟢";
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            font-size: 12px;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .btn-excel { background: #10B981; }
+        .btn-pdf { background: #EF4444; }
+        .btn-print { background: #3B82F6; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div>
+            <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item active"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Weekly Timetable</h1><p>View and manage your teaching schedule</p></div>
+            <div class="header-actions">
+                <div class="notifications-wrapper">
+                    <button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button>
+                    <div class="notifications-dropdown" id="notificationsDropdown">...</div>
+                </div>
+                <div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div>
+            </div>
+        </header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-week"></i> Teaching Schedule</h2>
+                <div class="export-buttons">
+                    <button class="btn-secondary btn-excel" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn-secondary btn-pdf" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn-secondary btn-print" id="printBtn"><i class="fas fa-print"></i> Print</button>
+                </div>
+            </div>
+
+            <!-- Week selector -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button class="btn-secondary" id="prevWeekBtn"><i class="fas fa-chevron-left"></i> Previous Week</button>
+                <span id="currentWeekDisplay" style="font-weight: 600;">Week of May 25, 2026</span>
+                <button class="btn-secondary" id="nextWeekBtn">Next Week <i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Timetable -->
+            <div class="timetable-container">
+                <table class="timetable" id="timetable">
+                    <thead>
+                        <tr id="timetableHeader"></tr>
+                    </thead>
+                    <tbody id="timetableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Legend -->
+            <div style="margin-top: 20px; display: flex; gap: 20px; flex-wrap: wrap; padding: 16px; background: #1E293B; border-radius: 12px;">
+                <span><i class="fas fa-circle" style="color: #10B981;"></i> Current Lesson</span>
+                <span><i class="fas fa-circle" style="color: #3B82F6;"></i> Upcoming</span>
+                <span><i class="fas fa-circle" style="color: #6B7280;"></i> Completed</span>
+                <span><i class="fas fa-clock" style="color: #F59E0B;"></i> Click lesson for details</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    let currentWeekOffset = 0;
+    let timetableData = {};
+    const timeSlots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTimetable();
+        setupEventListeners();
+        updateWeekDisplay();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('prevWeekBtn')?.addEventListener('click', () => { currentWeekOffset--; updateWeekDisplay(); loadTimetable(); });
+        document.getElementById('nextWeekBtn')?.addEventListener('click', () => { currentWeekOffset++; updateWeekDisplay(); loadTimetable(); });
+        document.getElementById('exportExcelBtn')?.addEventListener('click', exportToExcel);
+        document.getElementById('printBtn')?.addEventListener('click', () => window.print());
+    }
+
+    function updateWeekDisplay() {
+        const now = new Date();
+        const currentMonday = new Date(now);
+        currentMonday.setDate(now.getDate() - now.getDay() + 1 + (currentWeekOffset * 7));
+        const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        document.getElementById('currentWeekDisplay').innerHTML = `Week of ${formatDate(currentMonday)} - ${formatDate(new Date(currentMonday.getTime() + 4*86400000))}`;
+    }
+
+    async function loadTimetable() {
+        const token = localStorage.getItem('teacherToken');
+        try {
+            const response = await fetch('/api/lesson-planner/schedule', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.data.length > 0) {
+                processTimetableData(data.data);
+            } else {
+                loadDemoTimetable();
+            }
+        } catch (error) {
+            console.error('Error loading timetable:', error);
+            loadDemoTimetable();
+        }
+    }
+
+    function loadDemoTimetable() {
+        const demoData = [
+            { class_name: 'Physics S4A', day_of_week: 'Monday', start_time: '08:00', duration: 60 },
+            { class_name: 'Physics S3B', day_of_week: 'Monday', start_time: '10:00', duration: 60 },
+            { class_name: 'Physics S4A', day_of_week: 'Tuesday', start_time: '08:00', duration: 60 },
+            { class_name: 'Physics S2A', day_of_week: 'Wednesday', start_time: '14:00', duration: 60 },
+            { class_name: 'Physics S3A', day_of_week: 'Thursday', start_time: '09:00', duration: 60 },
+            { class_name: 'Physics S4A', day_of_week: 'Friday', start_time: '08:00', duration: 60 },
+            { class_name: 'Physics S2B', day_of_week: 'Friday', start_time: '10:00', duration: 60 }
+        ];
+        processTimetableData(demoData);
+    }
+
+    function processTimetableData(lessons) {
+        timetableData = {};
+        for (const day of days) {
+            timetableData[day] = {};
+            for (const slot of timeSlots) {
+                timetableData[day][slot] = [];
+            }
+        }
+        
+        for (const lesson of lessons) {
+            const startHour = parseInt(lesson.start_time.split(':')[0]);
+            const startSlot = `${startHour.toString().padStart(2,'0')}:00`;
+            if (timetableData[lesson.day_of_week] && timetableData[lesson.day_of_week][startSlot]) {
+                timetableData[lesson.day_of_week][startSlot].push(lesson);
+            }
+        }
+        
+        renderTimetable();
+    }
+
+    function renderTimetable() {
+        const headerRow = document.getElementById('timetableHeader');
+        headerRow.innerHTML = `<th class="time-slot">Time</th>${days.map(day => `<th>${day}</th>`).join('')}`;
+        
+        const tbody = document.getElementById('timetableBody');
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentDay = days[now.getDay() - 1];
+        
+        tbody.innerHTML = timeSlots.map(slot => {
+            const isCurrentHour = parseInt(slot.split(':')[0]) === currentHour;
+            return `
+                <tr>
+                    <td class="time-slot" style="${isCurrentHour ? 'background: #2563EB30;' : ''}">${slot}</td>
+                    ${days.map(day => {
+                        const lessons = timetableData[day]?.[slot] || [];
+                        const isCurrent = (day === currentDay && isCurrentHour && lessons.length > 0);
+                        return `
+                            <td class="${isCurrent ? 'current-lesson-highlight' : ''}">
+                                ${lessons.map(lesson => `
+                                    <div class="lesson-card" onclick="showLessonDetails('${lesson.class_name}', '${lesson.start_time}', ${lesson.duration})">
+                                        <div class="lesson-class">${lesson.class_name}</div>
+                                        <div class="lesson-time">${lesson.start_time} (${lesson.duration}min)</div>
+                                    </div>
+                                `).join('')}
+                                ${lessons.length === 0 ? '<div style="color: #334155; font-size: 12px;">—</div>' : ''}
+                            </td>
+                        `;
+                    }).join('')}
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function showLessonDetails(className, time, duration) {
+        const endHour = parseInt(time.split(':')[0]) + Math.floor((parseInt(time.split(':')[1]) + duration) / 60);
+        const endMin = (parseInt(time.split(':')[1]) + duration) % 60;
+        alert(`📖 ${className}\n⏰ ${time} - ${endHour.toString().padStart(2,'0')}:${endMin.toString().padStart(2,'0')}\n⏱️ Duration: ${duration} minutes`);
+    }
+
+    function exportToExcel() {
+        let csv = "Time," + days.join(",") + "\n";
+        for (const slot of timeSlots) {
+            let row = slot;
+            for (const day of days) {
+                const lessons = timetableData[day]?.[slot] || [];
+                const lessonNames = lessons.map(l => l.class_name).join("; ");
+                row += `,"${lessonNames || '-'}"`;
+            }
+            csv += row + "\n";
+        }
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `timetable_week_${currentWeekOffset}.csv`;
+        link.click();
+        alert('Timetable exported to CSV!');
+    }
+
+    window.showLessonDetails = showLessonDetails;
+</script>
+</body>
+</html>
