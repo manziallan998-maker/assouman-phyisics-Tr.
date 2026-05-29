@@ -1,0 +1,11 @@
+{
+  "name": "smartclass-analytics",
+  "version": "1.0.0",
+  "description": "SmartClass Analytics - Teacher Performance System",
+  "main": "index.html",
+  "scripts": {
+    "start": "python backend/app.py"
+  },
+  "author": "manzallan",
+  "license": "MIT"
+}
