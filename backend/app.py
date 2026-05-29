@@ -9,6 +9,14 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import pandas as pd
 import json
+from database import get_db, init_database, TeacherDB, ClassDB, StudentDB
+
+# Initialize database on startup
+init_database()
+
+# Use database functions
+teacher = TeacherDB.find_by_email('teacher@school.rw')
+classes = ClassDB.get_by_teacher(teacher_id)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'smartclass-secret-key-2026')
